@@ -3,7 +3,6 @@ package main;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-
 import javax.imageio.ImageIO;
 
 public class JPEG_Compress {
@@ -71,11 +70,7 @@ public class JPEG_Compress {
 				currentVector_Y  = new int[64];
 				currentVector_Cb  = new int[64];
 				currentVector_Cr  = new int[64];
-				// should be equal
-				if(i == 8 && j == 0) {
-					System.out.println("mau block:" + currentBlock_Y[1][1]);
-					System.out.println("mau goc:" + Y[1 + 8][1]);
-				}
+				
 				DCT_2D();
 				Quantization();
 				ZigZagScan_to_CreateVector();
@@ -97,7 +92,7 @@ public class JPEG_Compress {
 	}
 	private void readImage(String url) {
 		/*
-		 * in this function, we do: readImage -> DownSpamling -> RGB to YCbCr -> shift value
+		 * in this function, we do: readImage -> DownSpamling--> RGB to YCbCr -> shift value
 		 * but because we don't know much about down sampling, then ignore it in this version
 		 * 
 		 */
