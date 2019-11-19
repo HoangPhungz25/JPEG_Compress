@@ -1,3 +1,9 @@
+#add more ignore file
+.classpath
+.DS_store
+
+#default
+
 .metadata
 bin/
 tmp/
