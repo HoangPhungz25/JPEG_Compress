@@ -62,43 +62,20 @@ public class JPEG_Compress {
 		for(int i=0; i< imgWidthWithPadding; i+=8) {
 			for(int j=0; j< imgHeightWithPadding; j+=8) {
 				
-				currentBlock_Y =  new int[][]{
-					{Y[i][j], Y[i][j+1], Y[i][j+2], Y[i][j+3], Y[i][j+4], Y[i][j+5], Y[i][6], Y[i][j+7]},
-					{Y[i+1][j], Y[i+1][j+1], Y[i+1][j+2], Y[i+1][j+3], Y[i+1][j+4], Y[i+1][j+5], Y[i+1][6], Y[i+1][j+7]},
-					{Y[i+2][j], Y[i+2][j+1], Y[i+2][j+2], Y[i+2][j+3], Y[i+2][j+4], Y[i+2][j+5], Y[i+2][6], Y[i+2][j+7]},
-					{Y[i+3][j], Y[i+3][j+1], Y[i+3][j+2], Y[i+3][j+3], Y[i+3][j+4], Y[i+3][j+5], Y[i+3][6], Y[i+3][j+7]},
-					{Y[i+4][j], Y[i+4][j+1], Y[i+4][j+2], Y[i+4][j+3], Y[i+4][j+4], Y[i+4][j+5], Y[i+4][6], Y[i+4][j+7]},
-					{Y[i+5][j], Y[i+5][j+1], Y[i+5][j+2], Y[i+5][j+3], Y[i+5][j+4], Y[i+5][j+5], Y[i+5][6], Y[i+5][j+7]},
-					{Y[i+6][j], Y[i+6][j+1], Y[i+6][j+2], Y[i+6][j+3], Y[i+6][j+4], Y[i+6][j+5], Y[i+6][6], Y[i+6][j+7]},
-					{Y[i+7][j], Y[i+7][j+1], Y[i+7][j+2], Y[i+7][j+3], Y[i+7][j+4], Y[i+7][j+5], Y[i+7][6], Y[i+7][j+7]}		
-				};
+				currentBlock_Y  = getCurrentBlock(i, j, Y);
 				
-				currentBlock_Cb =  new int[][]{
-					{Cb[i][j], Cb[i][j+1], Cb[i][j+2], Cb[i][j+3], Cb[i][j+4], Cb[i][j+5], Cb[i][6], Cb[i][j+7]},
-					{Cb[i+1][j], Cb[i+1][j+1], Cb[i+1][j+2], Cb[i+1][j+3], Cb[i+1][j+4], Cb[i+1][j+5], Cb[i+1][6], Cb[i+1][j+7]},
-					{Cb[i+2][j], Cb[i+2][j+1], Cb[i+2][j+2], Cb[i+2][j+3], Cb[i+2][j+4], Cb[i+2][j+5], Cb[i+2][6], Cb[i+2][j+7]},
-					{Cb[i+3][j], Cb[i+3][j+1], Cb[i+3][j+2], Cb[i+3][j+3], Cb[i+3][j+4], Cb[i+3][j+5], Cb[i+3][6], Cb[i+3][j+7]},
-					{Cb[i+4][j], Cb[i+4][j+1], Cb[i+4][j+2], Cb[i+4][j+3], Cb[i+4][j+4], Cb[i+4][j+5], Cb[i+4][6], Cb[i+4][j+7]},
-					{Cb[i+5][j], Cb[i+5][j+1], Cb[i+5][j+2], Cb[i+5][j+3], Cb[i+5][j+4], Cb[i+5][j+5], Cb[i+5][6], Cb[i+5][j+7]},
-					{Cb[i+6][j], Cb[i+6][j+1], Cb[i+6][j+2], Cb[i+6][j+3], Cb[i+6][j+4], Cb[i+6][j+5], Cb[i+6][6], Cb[i+6][j+7]},
-					{Cb[i+7][j], Cb[i+7][j+1], Cb[i+7][j+2], Cb[i+7][j+3], Cb[i+7][j+4], Cb[i+7][j+5], Cb[i+7][6], Cb[i+7][j+7]}		
-				};
+				currentBlock_Cb = getCurrentBlock(i, j, Cb);
 				
-				currentBlock_Cr =  new int[][]{
-					{Cr[i][j], Cr[i][j+1], Cr[i][j+2], Cr[i][j+3], Cr[i][j+4], Cr[i][j+5], Cr[i][6], Cr[i][j+7]},
-					{Cr[i+1][j], Cr[i+1][j+1], Cr[i+1][j+2], Cr[i+1][j+3], Cr[i+1][j+4], Cr[i+1][j+5], Cr[i+1][6], Cr[i+1][j+7]},
-					{Cr[i+2][j], Cr[i+2][j+1], Cr[i+2][j+2], Cr[i+2][j+3], Cr[i+2][j+4], Cr[i+2][j+5], Cr[i+2][6], Cr[i+2][j+7]},
-					{Cr[i+3][j], Cr[i+3][j+1], Cr[i+3][j+2], Cr[i+3][j+3], Cr[i+3][j+4], Cr[i+3][j+5], Cr[i+3][6], Cr[i+3][j+7]},
-					{Cr[i+4][j], Cr[i+4][j+1], Cr[i+4][j+2], Cr[i+4][j+3], Cr[i+4][j+4], Cr[i+4][j+5], Cr[i+4][6], Cr[i+4][j+7]},
-					{Cr[i+5][j], Cr[i+5][j+1], Cr[i+5][j+2], Cr[i+5][j+3], Cr[i+5][j+4], Cr[i+5][j+5], Cr[i+5][6], Cr[i+5][j+7]},
-					{Cr[i+6][j], Cr[i+6][j+1], Cr[i+6][j+2], Cr[i+6][j+3], Cr[i+6][j+4], Cr[i+6][j+5], Cr[i+6][6], Cr[i+6][j+7]},
-					{Cr[i+7][j], Cr[i+7][j+1], Cr[i+7][j+2], Cr[i+7][j+3], Cr[i+7][j+4], Cr[i+7][j+5], Cr[i+7][6], Cr[i+7][j+7]}		
-				};
+				currentBlock_Cr = getCurrentBlock(i, j, Cr);
 				
 				currentVector_Y  = new int[64];
 				currentVector_Cb  = new int[64];
 				currentVector_Cr  = new int[64];
-
+				// should be equal
+				if(i == 8 && j == 0) {
+					System.out.println("mau block:" + currentBlock_Y[1][1]);
+					System.out.println("mau goc:" + Y[1 + 8][1]);
+				}
 				DCT_2D();
 				Quantization();
 				ZigZagScan_to_CreateVector();
@@ -109,7 +86,15 @@ public class JPEG_Compress {
 		export_jpeg(output_url);
 	
 	}
-	
+	private int[][] getCurrentBlock(int startI,int startJ, int arr[][]) {
+	  int[][] currentArr = new int[8][8];
+	  for(int i = 0; i < 8; i++) {
+		for(int j = 0; j < 8; j++) {
+			currentArr[i][j] = arr[i+startI][j+startJ];
+		}
+	  }
+	  return currentArr;
+	}
 	private void readImage(String url) {
 		/*
 		 * in this function, we do: readImage -> DownSpamling -> RGB to YCbCr -> shift value
@@ -158,7 +143,7 @@ public class JPEG_Compress {
 		// RGB to YCbCr
 				RGB2YCbCr(i, j);
 		// SHIFT VALUE
-				shiftValue(i,j);
+//				shiftValue(i,j);
 
 				}
 			}
@@ -186,7 +171,6 @@ public class JPEG_Compress {
 		Y[i][j] -= 128;
 		Cb[i][j] -= 128;
 		Cr[i][j] -= 128;
-
 
 	}
 	private void addPaddingPixels(int width, int height, int imgWidthWithPadding, int imgHeightWithPadding) {
@@ -255,7 +239,6 @@ public class JPEG_Compress {
 		   { 
 		            f = new File(output_url); 
 		            System.out.println(f.delete());
-		            
 		            System.out.println(f);
 			        ImageIO.write(img_buff_out, "jpg", f); 
 
