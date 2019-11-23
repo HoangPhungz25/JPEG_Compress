@@ -15,6 +15,13 @@ public class JPEG_Compress {
 	int Cb[][];
 	int Cr[][];
 	
+	double YDct[][];
+	double CbDct[][];
+	double CrDct[][];
+	
+	boolean YType = true;
+	boolean NoneYType = false;
+	
 	int currentBlock_Y[][];
 	int currentBlock_Cb[][];
 	int currentBlock_Cr[][];
@@ -31,6 +38,12 @@ public class JPEG_Compress {
 	int paddingHeight = 0;
 	int imgWidthWithPadding;
 	int imgHeightWithPadding;
+	
+	int horizontalIndex[];
+	int verticalIndex[];
+
+    public static int n = 8,m = 8; 
+    public static double pi = 3.142857; 
 	
 	//CONSTANT
 	int Q_matrix_Y[][] = {
@@ -58,7 +71,6 @@ public class JPEG_Compress {
 	public void Compress(String input_url, String output_url) {
 		readImage(input_url);
 		
-		
 		for(int i=0; i< imgWidthWithPadding; i+=8) {
 			for(int j=0; j< imgHeightWithPadding; j+=8) {
 				
@@ -76,9 +88,19 @@ public class JPEG_Compress {
 					System.out.println("mau block:" + currentBlock_Y[1][1]);
 					System.out.println("mau goc:" + Y[1 + 8][1]);
 				}
-				DCT_2D();
-				Quantization();
-				ZigZagScan_to_CreateVector();
+				currentBlock_Y = DCT_2D(currentBlock_Y);
+				currentBlock_Cb = DCT_2D(currentBlock_Cb);
+				currentBlock_Cr = DCT_2D(currentBlock_Cr);
+				 
+				currentBlock_Y = Quantization(currentBlock_Y, YType);
+				currentBlock_Cb = Quantization(currentBlock_Cb, NoneYType);
+				currentBlock_Cr = Quantization(currentBlock_Cr, NoneYType);
+				
+				currentVector_Y = assignVector(currentBlock_Y);
+				currentVector_Cb = assignVector(currentBlock_Cb);
+				currentVector_Cr = assignVector(currentBlock_Cr);
+				
+				// ZigZagScan_to_CreateVector();
 				EntropyEncode();
 			}
 		}
@@ -105,6 +127,29 @@ public class JPEG_Compress {
 		
 		//READ IMAGE
 		 try {
+			 // check  DCT and quantum
+			 int matrix[][] = { 
+			    		{ -76, -73, -67, -62, -58, -67, -64, -55 }, 
+			            { -65, -69, -76, -38, -19, -43, -59, -56 }, 
+			            { -66, -69, -60, -15, 16, -24, -62, -55 }, 
+			            { -65, -70, -57, -6, 26, -22, -58, -59 }, 
+			            { -61, -67, -60, -24, -2, -40, -60, -58 }, 
+			            { -49, -63, -68, -58, -51, -60, -70, -53 }, 
+			            { -43, -57, -64, -69, -73, -67, -63, -45 }, 
+			            { -41, -49, -59, -60, -63, -52, -50, -34 } };
+			 int checkMatrix[][] = DCT_2D(matrix);
+			 checkMatrix = Quantization(checkMatrix, true);
+			 // log2DArr(checkMatrix);
+			 // get vector index vertical and horizontal
+			 horizontalIndex = getIndexArr(0);
+			 verticalIndex = getIndexArr(1);
+			 for(int i = 0; i < 64; i++) {
+			   System.out.print(verticalIndex[i] + " ");
+			 }
+			 System.out.println();
+			 for(int i = 0; i < 64; i++) {
+				   System.out.print(horizontalIndex[i] + " ");
+				 }
 				img_buff =  ImageIO.read(getClass().getResource(url));
 			} catch (IOException e) {
 				System.out.println(e.getMessage());
@@ -143,7 +188,7 @@ public class JPEG_Compress {
 		// RGB to YCbCr
 				RGB2YCbCr(i, j);
 		// SHIFT VALUE
-//				shiftValue(i,j);
+				shiftValue(i,j);
 
 				}
 			}
@@ -196,18 +241,121 @@ public class JPEG_Compress {
 			}
 		}
 	}
-	
-	
-
-	private void DCT_2D() {
-		//apply dct 2d for currentBlock_Y, currentBlock_Cb, currentBlock_Cr
+	// just log to check
+	private void log2DArr(int matrix[][]) {
+		for(int i = 0; i< m; i++) {
+			for(int j = 0;j< n; j++) {
+				System.out.print(" " + matrix[i][j] + " ");
+			}
+			System.out.println();
+		}
 	}
-	private void Quantization() {
+
+	private int[][] DCT_2D(int matrix[][]) {
+		//apply dct 2d for currentBlock_Y, currentBlock_Cb, currentBlock_Cr
+		 int i, j, k, l; 
+		   
+	        // dct will store the discrete cosine transform 
+	        int[][] dct = new int[m][n]; 
+	   
+//	        for(int p = 0; p < 8; p++) {
+//            	for(int a = 0; a<8; a++) {
+//            		System.out.print( " " + matrix[p][a] + " ");
+//            	}
+//            	System.out.println();
+//            }
+//            
+	        double ci, cj, dct1, sum; 
+	   
+	        for (i = 0; i < m; i++)  
+	        { 
+	            for (j = 0; j < n; j++)  
+	            { 
+	                // ci and cj depends on frequency as well as 
+	                // number of row and columns of specified matrix 
+	                if (i == 0) 
+	                    ci = 1 / Math.sqrt(m); 
+	                else
+	                    ci = Math.sqrt(2) / Math.sqrt(m); 
+	                      
+	                if (j == 0) 
+	                    cj = 1 / Math.sqrt(n); 
+	                else
+	                    cj = Math.sqrt(2) / Math.sqrt(n); 
+	   
+	                // sum will temporarily store the sum of  
+	                // cosine signals 
+	                sum = 0; 
+	                
+	                for (k = 0; k < m; k++)  
+	                { 
+	                    for (l = 0; l < n; l++)  
+	                    { 
+	                        dct1 = matrix[k][l] *  
+	                               Math.cos((2 * k + 1) * i * pi / (2 * m)) *  
+	                               Math.cos((2 * l + 1) * j * pi / (2 * n)); 
+	                        sum = sum + dct1; 
+	                    } 
+	                } 
+	                dct[i][j] = (int) Math.round(ci * cj * sum); 
+	              //  System.out.print( " " + dct[i][j] + " ");
+	            } 
+	            // System.out.println();
+	        } 
+	        return dct;
+	}
+	private int[][] Quantization(int matrix[][], boolean checkYType) {
 		//apply quantization for currentBlock_Y, currentBlock_Cb, currentBlock_Cr
+		int[][] newMatrix = new int[m][n];
+		if(checkYType) {
+			for(int i = 0; i< m; i++) {
+				for(int j = 0; j <n ; j++) {
+					newMatrix[i][j] = Math.round((matrix[i][j] + Q_matrix_Y[i][j]/2 )/ Q_matrix_Y[i][j]);
+				}
+			}
+		}else {
+			for(int i = 0; i< m; i++) {
+				for(int j = 0; j <n ; j++) {
+					newMatrix[i][j] =  Math.round((matrix[i][j] + Q_matrix_CbCr[i][j]/2 )/ Q_matrix_CbCr[i][j]);
+				}
+			}
+		}
+		
+		return newMatrix;
+	}
+	private int[] getIndexArr(int start) {
+		int[] index = new int[64];
+		int count = 0;
+		int i,j;
+		for(int max = start; max < 8; max= max+2) {
+			for( i = 0; i< max + 1; i++) {
+				index[count++] = i;
+			}
+			for( j = max - 1; j >= 0; j--) {
+				index[count++] = j;
+			}	
+		};
+		for(int min = start; min < 8; min= min+ 2) {
+			for( i = min; i< 8; i++) {
+				index[count++] = i;
+			}
+			for( j = 7; j > min; j--) {
+				index[count++] = j;
+			}
+		}
+		return index;
 	}
 	private void ZigZagScan_to_CreateVector() {
 		//apply zigzag scan on 3 block currentBlock_Y, currentBlock_Cb, currentBlock_Cr 
 		//to assign value for 3 vector currentVector_Y, currentVector_Cb, currentVector_Cr
+	}
+	private int[] assignVector(int arr[][]) {
+		int[] vector = new int[64];
+		int count = 0;
+		for(int i = 0; i< 64; i++) {
+			vector[count++] = arr[verticalIndex[i]][horizontalIndex[i]];
+		}
+		return vector;
 	}
 	private void EntropyEncode() {
 		//apply RLC on AC, DPCM on DC for 3 vector currentVector_Y, currentVector_Cb, currentVector_Cr
@@ -217,7 +365,6 @@ public class JPEG_Compress {
 	
 
 	private void export_jpeg(String output_url) {
-		
 		// this function is a mystery???????????????
 		//???have no idea about jpeg file format.
 		//this will be soon edited 
