@@ -2,10 +2,12 @@ package main;
 
 public class Bitcode {
 	private char code;
+	private int value;
 	private char numOfBit;
-	public Bitcode(char code, char numOfBit) {
+	public Bitcode(char code, int value, char numOfBit) {
 		super();
 		this.code = code;
+		this.value = value;
 		this.numOfBit = numOfBit;
 	}
 	
@@ -14,7 +16,10 @@ public class Bitcode {
 		System.out.print((int)code+ ":"+stringCodeWord+"\t");
 	}
 	public void myPrintCodeWord() {
-		System.out.print((int)code + ":" + codeWord2BinaryString()+"\t");
+		System.out.print(value + ":" + codeWord2BinaryString()+"\t");
+	}
+	public void myPrintCodeWord(int i) {
+		System.out.print(Integer.toHexString((int)i) + ":" + codeWord2BinaryString()+"\t");
 	}
 	public String codeWord2BinaryString() {
 		
