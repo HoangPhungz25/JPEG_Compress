@@ -13,13 +13,13 @@ public class Bitcode {
 	
 	public void printCodeWord() {
 		String stringCodeWord = Integer.toBinaryString(code);
-		System.out.print((int)code+ ":"+stringCodeWord+"\t");
+		// System.out.print((int)code+ ":"+stringCodeWord+"\t");
 	}
 	public void myPrintCodeWord() {
-		System.out.print(value + ":" + codeWord2BinaryString()+"\t");
+		// System.out.print(value + ":" + codeWord2BinaryString()+"\t");
 	}
 	public void myPrintCodeWord(int i) {
-		System.out.print(Integer.toHexString((int)i) + ":" + codeWord2BinaryString()+"\t");
+		// System.out.print(Integer.toHexString((int)i) + ":" + codeWord2BinaryString()+"\t");
 	}
 	public String codeWord2BinaryString() {
 		

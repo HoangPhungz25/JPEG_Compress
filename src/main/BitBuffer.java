@@ -10,7 +10,7 @@ public class BitBuffer {
 	}
 	
 	public void printBufferData() {
-		System.out.println("buffer: "+codeWord2BinaryString()+"\t"+(int)numbits);
+		// System.out.println("buffer: "+codeWord2BinaryString()+"\t"+(int)numbits);
 	}
 	
 	public String codeWord2BinaryString() {
