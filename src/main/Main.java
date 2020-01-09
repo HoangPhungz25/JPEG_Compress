@@ -1,5 +1,7 @@
 package main;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class Main {
 	
@@ -7,7 +9,17 @@ public class Main {
 	private static String input_url2 = "image2.png";
 	private static String input_url3 = "image.tif";
 	private static String input_url4 = "testOrientation.tif";
-	private static String input_url5 = "testFinal2.jpg";
+	private static String input_url5 = "testFinal.jpg";
+	private static String input_url6 = "white.tif";
+	private static String input_url7 = "ltu15.jpg";
+	private static String input_url8 = "MiuAndBon.JPG";
+	private static String input_url9 = "bin.JPG";
+	private static String input_url_theTestOfHangging = "blue.tif";
+
+
+
+
+
 
 
 
@@ -29,11 +41,13 @@ public class Main {
 		
 		//detect if this OS is Window10 or MacOS
 		if(System.getProperty("os.name").equals(OS_NAME_WIN)) {
-			jpeg_compress.Compress(input_url5, output_url_Window);
+			jpeg_compress.Compress(input_url_theTestOfHangging, output_url_Window);
 		}else {
 			jpeg_compress.Compress(input_url, output_url_Mac);
 		}
 		
-	}
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");  
+		   LocalDateTime now = LocalDateTime.now();  
+		   System.out.println(dtf.format(now));  	}
 	
 }

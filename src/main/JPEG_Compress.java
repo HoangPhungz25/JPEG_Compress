@@ -150,7 +150,9 @@ public class JPEG_Compress {
 	int verticalIndex[];
 
     public static int n = 8,m = 8; 
-    public static double pi = 3.142857; 
+    public static double pitren16 = Math.PI/16; 
+    float trencan2 = (float)(1 / Math.sqrt(2));
+    float tempCos[][];
     
     //entropy coding
     int last_DC_Y = 0, last_DC_Cb = 0, last_DC_Cr = 0;
@@ -199,7 +201,7 @@ public class JPEG_Compress {
     char SOS_metadata[] = {0x03, 0x01, 0x00, 0x02, 0x11, 0x03, 0x11, 0x00, 0x3F, 0x00};
     
     //EOI
-    char EOI_marker[] = {0xFF, 0x09};
+    char EOI_marker[] = {0xFF, 0xD9};
     //QUANTUM
 	char Q_matrix_Y[][] = {
 								{16, 11, 10, 16, 24, 40, 51, 61},
@@ -222,6 +224,7 @@ public class JPEG_Compress {
 								{99, 99, 99, 99, 99, 99 ,99 ,99},
 								{99, 99, 99, 99, 99, 99 ,99 ,99},
 							};
+	float Q_matrix_Y_Reverse[][], Q_matrix_CbCr_Reverse[][];
 	 char ZigZag[][] =
 	    {  
 	      {0, 1, 5, 6,14,15,27,28},   // ZigZag[] =  0, 1, 5, 6,14,15,27,28,
@@ -270,14 +273,14 @@ public class JPEG_Compress {
 		readImage(input_url);
 //		createExampleImage();
 		genHuffmanTables();
+		prepareTempCode();
+		reverseQMattrix();
 		try {
 			 f2 = new FileOutputStream(output_url);
 			 writer = new DataOutputStream(f2);
 			 
 			 
-//			 //debug
-//			imgHeightWithPadding = 8;
-//			imgWidthWithPadding = 16;
+
 			 
 			writeAllMetadata(writer);
 			genCodeWordForQuantizedValue();
@@ -294,21 +297,21 @@ public class JPEG_Compress {
 					currentVector_Y  = new int[64];
 					currentVector_Cb  = new int[64];
 					currentVector_Cr  = new int[64];
-					System.out.println("DCT");
+//					System.out.println("DCT");
 					currentBlock_Y = DCT_2D(currentBlock_Y);
-					log2DBlock(currentBlock_Y);
+//					log2DBlock(currentBlock_Y);
 					currentBlock_Cb = DCT_2D(currentBlock_Cb);
-					log2DBlock(currentBlock_Cb);
+//					log2DBlock(currentBlock_Cb);
 					currentBlock_Cr = DCT_2D(currentBlock_Cr);
-					log2DBlock(currentBlock_Cr);
+//					log2DBlock(currentBlock_Cr);
 
-					System.out.println("quantization");
+//					System.out.println("quantization");
 					currentQuantizedBlock_Y = Quantization(currentBlock_Y, YType);
-					log2DBlock(currentQuantizedBlock_Y);
+//					log2DBlock(currentQuantizedBlock_Y);
 					currentQuantizedBlock_Cb = Quantization(currentBlock_Cb, NoneYType);
-					log2DBlock(currentQuantizedBlock_Cb);
+//					log2DBlock(currentQuantizedBlock_Cb);
 					currentQuantizedBlock_Cr = Quantization(currentBlock_Cr, NoneYType);
-					log2DBlock(currentQuantizedBlock_Cr);
+//					log2DBlock(currentQuantizedBlock_Cr);
 					
 					
 					currentVector_Y = assignVector(currentQuantizedBlock_Y, Type_Y);
@@ -357,7 +360,25 @@ public class JPEG_Compress {
 		return true;
 	
 	}
-	
+	private void reverseQMattrix() {
+		Q_matrix_Y_Reverse = new float[8][8];
+		Q_matrix_CbCr_Reverse = new float[8][8];
+
+		for(int i=0; i<8; i++) {
+			for(int j=0; j<8; j++) {
+				Q_matrix_Y_Reverse[i][j] = (1/(float)Q_matrix_Y[i][j]);
+				Q_matrix_CbCr_Reverse[i][j] = (1/(float)Q_matrix_CbCr[i][j]);
+
+			}
+		}
+	}
+	private void prepareTempCode() {
+		tempCos = new float[8][8];
+		
+		for(int i=0; i<8; i++) {
+			for(int j=0; j<8; j++) tempCos[i][j] = (float) (Math.cos((2 * i + 1) * j * pitren16));
+		}
+	}
 	private void createExampleImage() {
 		
 		
@@ -586,7 +607,6 @@ public class JPEG_Compress {
 
 				//get RGB value of each pixel then convert from RGB to YCbCr
 				//note: i - horizontal, j - vertical 
-				System.out.println((img_buff.getRGB(14,3))&0xff);
 				for(int x=0; x<imgWidth; x++) {
 					for(int y=0; y<imgHeight; y++) {
 						int p = img_buff.getRGB(x,y);
@@ -602,11 +622,9 @@ public class JPEG_Compress {
 				shiftValue(y,x);
 
 					}
-					System.out.println();
 				}
 				
 				//**add value to padding pixels by cloning the value of nearest pixel
-				System.out.println(".............Padding");
 				addPaddingPixels(imgWidth, imgHeight, imgWidthWithPadding, imgHeightWithPadding);
 				
 			}
@@ -634,7 +652,6 @@ public class JPEG_Compress {
 	private void addPaddingPixels(int width, int height, int imgWidthWithPadding, int imgHeightWithPadding) {
 		//add value to padding pixels for the right edge
 		if(imgWidthWithPadding > imgWidth) {
-			System.out.println(".............Width Greater");
 			for(int y=0; y<imgHeight;y++){
 				 for(int x=imgWidth; x< imgWidthWithPadding; x++){
 					Y[y][x] = Y[y][x-1];
@@ -670,12 +687,12 @@ public class JPEG_Compress {
 	            {  
 	            	
 	            	if (u == 0) 
-	                    cu = 1 / Math.sqrt(2); 
+	                    cu = trencan2; 
 	                else
 	                    cu = 1; 
 	                      
 	                if (v == 0) 
-	                    cv = 1 / Math.sqrt(2); 
+	                    cv = trencan2; 
 	                else
 	                    cv = 1; 
 	   
@@ -687,9 +704,9 @@ public class JPEG_Compress {
 	                { 
 	                	for (y = 0; y < m; y++)  
 	                    { 
-	                        dct1 = matrix[x][y] *  
-	                               Math.cos((2 * x + 1) * u * pi / (16)) *  
-	                               Math.cos((2 * y + 1) * v * pi / (16)); 
+	                        dct1 = matrix[x][y] *  tempCos[x][u] * tempCos[y][v];
+//	                               Math.cos((2 * x + 1) * u * pitren16) *  
+//	                               Math.cos((2 * y + 1) * v * pitren16); 
 	                        sum = sum + dct1; 
 	                    } 
 	                } 
@@ -707,7 +724,8 @@ public class JPEG_Compress {
 			for(int i = 0; i< 8; i++) {
 				for(int j = 0; j <8 ; j++) {
 //					newMatrix[i][j] = Math.round((matrix[i][j] + Q_matrix_Y[i][j]/2 )/ Q_matrix_Y[i][j]);
-					newMatrix[i][j] = Math.round(matrix[i][j]/ Q_matrix_Y[i][j]);
+//					newMatrix[i][j] = Math.round(matrix[i][j]/ Q_matrix_Y[i][j]);
+					newMatrix[i][j] = Math.round(matrix[i][j]*Q_matrix_Y_Reverse[i][j]);
 
 				}
 			}
@@ -715,7 +733,8 @@ public class JPEG_Compress {
 			for(int i = 0; i< m; i++) {
 				for(int j = 0; j <n ; j++) {
 //					newMatrix[i][j] =  Math.round((matrix[i][j] + Q_matrix_CbCr[i][j]/2 )/ Q_matrix_CbCr[i][j]);
-					newMatrix[i][j] = Math.round(matrix[i][j]/ Q_matrix_CbCr[i][j]);
+//					newMatrix[i][j] = Math.round(matrix[i][j]/ Q_matrix_CbCr[i][j]);
+					newMatrix[i][j] = Math.round(matrix[i][j]*Q_matrix_CbCr_Reverse[i][j]);
 
 				}
 			}
@@ -763,7 +782,7 @@ public class JPEG_Compress {
 		else if(TYPE == Type_Cb) pos_NonZero_Cb = posNoneZero;
 		else pos_NonZero_Cr = posNoneZero;
 		
-		System.out.println("Pos non-zero:"+(int)posNoneZero);
+//		System.out.println("Pos non-zero:"+(int)posNoneZero);
 
 		return vector;
 		
@@ -780,11 +799,10 @@ public class JPEG_Compress {
 //		else if(TYPE == Type_Cb) pos_NonZero_Cb = posNoneZero;
 //		else pos_NonZero_Cr = posNoneZero;
 //		return vector;
-		
 	}
 	private int EntropyEncode(int[] vector, int lastDC, char TYPE) {
-		logVector(vector);
-		System.out.println("\nEncoding DC:.......");
+//		logVector(vector);
+//		System.out.println("\nEncoding DC:.......");
 		Bitcode[] huffmanTableDC, huffmanTableAC;
 		if(TYPE == Type_Y) {
 			huffmanTableDC = huffmanTable_Y_DC;
@@ -794,35 +812,35 @@ public class JPEG_Compress {
 			huffmanTableAC = huffmanTable_CbCr_AC;
 		}
 		//encode DC
-		System.out.println("DC:"+vector[0]);
+//		System.out.println("DC:"+vector[0]);
 		int diff =  (vector[0] - lastDC);
-		System.out.println("DC diff:"+diff);
+//		System.out.println("DC diff:"+diff);
 		if(diff==0) {
 			writeBits(huffmanTableDC[0x00]);
 		}else {
 			Bitcode codeword;
 			if(diff>0) 	codeword = codeWordFoQuantizedValuePositive[diff];
 			else  codeword = codeWordFoQuantizedValueNagative[-diff];
-			codeword.myPrintCodeWord();
+//			codeword.myPrintCodeWord();
 			writeBits(huffmanTableDC[codeword.getNumOfBit()]);//write the code word
 			writeBits(codeword);
 		}
 		
 		
 		//encode A
-		System.out.println("\nEncoding AC:.......");
+//		System.out.println("\nEncoding AC:.......");
 		char posNoneZero = 0;
 		char numOfSequenceZero = 0;
 		
 		if(TYPE == Type_Y) posNoneZero = pos_NonZero_Y ;
 		else if(TYPE == Type_Cb) posNoneZero = pos_NonZero_Cb;
 		else posNoneZero = pos_NonZero_Cr;
-		System.out.println("Last none zero:"+(int)posNoneZero);
+//		System.out.println("Last none zero:"+(int)posNoneZero);
 		
 		for(int i=1; i<=posNoneZero; i++) {
 			if(vector[i]==0) numOfSequenceZero+=0x10;
 			else {
-				System.out.println("\n***AC values: "+vector[i]);
+//				System.out.println("\n***AC values: "+vector[i]);
 				if(numOfSequenceZero>0xF0) {
 					writeBits(huffmanTableAC[0xF0]);
 					numOfSequenceZero = 0;
@@ -830,41 +848,41 @@ public class JPEG_Compress {
 				Bitcode codeword;
 				if(vector[i]>0) 	codeword = codeWordFoQuantizedValuePositive[vector[i]];
 				else  codeword = codeWordFoQuantizedValueNagative[-vector[i]];
-				codeword.myPrintCodeWord();
-				//System.out.println("numOfSequence ** "+ (int)numOfSequenceZero +"numofbit"+ (int)codeword.getNumOfBit());
+//				codeword.myPrintCodeWord();
+//				System.out.println("numOfSequence ** "+ (int)numOfSequenceZero +"numofbit"+ (int)codeword.getNumOfBit());
 				writeBits(huffmanTableAC[numOfSequenceZero+codeword.getNumOfBit()]);//TODO: or +
-				//System.out.println(huffmanTableAC[numOfSequenceZero+codeword.getNumOfBit()].getCode());
+//				System.out.println(huffmanTableAC[numOfSequenceZero+codeword.getNumOfBit()].getCode());
 				writeBits(codeword);
 				numOfSequenceZero = 0;
 			}
 		}
 		
 		if(posNoneZero<63) {
-			System.out.println(">>>>>write 0x00");
+//			System.out.println(">>>>>write 0x00");
 			writeBits(huffmanTableAC[0x00]);
 		}
 		return vector[0];
 	}
 	private void writeBits(Bitcode codeword) {
-		System.out.println("CALL method WRITEBITS");	
-		codeword.myPrintCodeWord();
-		System.out.println();
-//		System.out.println((int)codeword.getCode());
-//		System.out.printf("buffer : add : before : data %s numbits: %d\n",Integer.toBinaryString(bitBuffer.getData()), (int)bitBuffer.getNumbits());
-		System.out.print("before : ");
-		bitBuffer.printBufferData();
+//		System.out.println("CALL method WRITEBITS");	
+//		codeword.myPrintCodeWord();
+//		System.out.println();
+//	**//	System.out.println((int)codeword.getCode());
+//	/**	System.out.printf("buffer : add : before : data %s numbits: %d\n",Integer.toBinaryString(bitBuffer.getData()), (int)bitBuffer.getNumbits());
+//		System.out.print("before : ");
+//		bitBuffer.printBufferData();
 
 		bitBuffer.setNumbits((char) (bitBuffer.getNumbits()+codeword.getNumOfBit()));
 		bitBuffer.setData((bitBuffer.getData()<<codeword.getNumOfBit())|codeword.getCode());
 		
-//		System.out.printf("buffer : add : after  : data %s numbits: %d\n",Integer.toBinaryString(bitBuffer.getData()), (int)bitBuffer.getNumbits());
-		System.out.print("after : ");
-		bitBuffer.printBufferData();
+//	**	System.out.printf("buffer : add : after  : data %s numbits: %d\n",Integer.toBinaryString(bitBuffer.getData()), (int)bitBuffer.getNumbits());
+//		System.out.print("after : ");
+//		bitBuffer.printBufferData();
 		
 		while(bitBuffer.getNumbits()>=8) {
 			bitBuffer.setNumbits((char) (bitBuffer.getNumbits()-8));
 			char firstByte = (char) (bitBuffer.getData()>>bitBuffer.getNumbits());
-			System.out.println("***write out byte***:"+Integer.toHexString((int)(firstByte&0xFF)));
+//			System.out.println("***write out byte***:"+Integer.toHexString((int)(firstByte&0xFF)));
 			try {
 				writer.writeByte(firstByte);
 				if((firstByte&0xFF) == 0xFF) {
@@ -875,8 +893,8 @@ public class JPEG_Compress {
 				e.printStackTrace();
 			}
 //			System.out.printf("buffer : write out : after : data %s numbits: %d\n",Integer.toBinaryString(bitBuffer.getData()), (int)bitBuffer.getNumbits());
-			System.out.print("*after write byte: ");
-			bitBuffer.printBufferData();
+//			System.out.print("*after write byte: ");
+//			bitBuffer.printBufferData();
 		}
 	}
 	private void genHuffmanTables() {
@@ -885,13 +903,13 @@ public class JPEG_Compress {
 		huffmanTable_CbCr_DC = generateHuffmanTable(Huffman_CbCr_DC_CodesPerBitsize, Huffman_CbCr_DC_Values);
 		huffmanTable_CbCr_AC = generateHuffmanTable(Huffman_CbCr_AC_CodesPerBitsize, Huffman_CbCr_AC_Values);
 		
-		System.out.println("***Y_DC***");
+//		System.out.println("***Y_DC***");
 		logBitCodeArr(huffmanTable_Y_DC);
-		System.out.println("***Y_AC***");
+//		System.out.println("***Y_AC***");
 		logBitCodeArr(huffmanTable_Y_AC);
-		System.out.println("***CbCr_DC***");
+//		System.out.println("***CbCr_DC***");
 		logBitCodeArr(huffmanTable_CbCr_DC);
-		System.out.println("***CbCr_AC***");
+//		System.out.println("***CbCr_AC***");
 		logBitCodeArr(huffmanTable_CbCr_AC);
 	
 	}
@@ -907,7 +925,6 @@ public class JPEG_Compress {
 			}
 			huffmanCode<<=1;
 		}
-		
 		return result;
 	}
 	private void genCodeWordForQuantizedValue() {
