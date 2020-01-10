@@ -1,25 +1,39 @@
-![](https://sistenix.com/img/rgb.png "test image RGB")
-![](https://sistenix.com/img/ycbcr.jpg "TEST image YCbCr")
-# Project Structure
+# Demo result
+Zoom them yourself to see the differences.
+* Image before compression: 6000 x 3376 , 11,6MB
+![](https://drive.google.com/uc?export=view&id=1arBoacp2fdW32UjjJrwzYtGwSypfqzPs "Image before compression")
+* Image after compression:  1,23MB
+![](https://drive.google.com/uc?export=view&id=1WFSy39oh4vjQ-_xwbHCiiyVa1Gb2PyoJ "Image after compression")
+# Project Structure: classes
 * __Main__:
-    *   Init UI 
+    *   Create path to input image, output location  
     *   Call JPEG_Compress class
 * __JPEG_Compress__
-    *   Read Image from url get from Main
+    *   Read Image from path get from Main
     *   Compress
-    *   Export to url get from  Main
-* __Image files__
-    * image.tif (raw input image file for testing)
-    * image2.png (second input image file for testing)
-    * other images: They all are output image. Each image is an export for testing : read img, convert color space, split blocks.
-# Issue
-1. What is the JPEG file format? After doing all processes, how can we write those data to file and which format of file do we chose?
-2. Some function depends on JPEG file format to detect its "return" and its output, thus i can't complete those function in source code.
-3. UI: we have no UI, this should be consider at last.
+    *   Export to output path get from  Main
+* __BitCode__
+    *   A class for a huffman code, contain 2 atributes: code word and number of bit that demonstrates the code word
+* __BitBuffer__
+    * A class use to store bit sequence generated in Run Length Encoding and Huffman Encoding processes.
+    * It contains 2 atributes: the buffer (a int number), and the number of bit that still in the buffer, waiting there to write out.
+# Technical espects
+*   Use default quantization table for 50% quality lost.
+*   Use standard huffman table that encodes the length of value instead of value it self.
+*   Works with: 3 color system image.
+*   No subsampling
+*   JFIF : 1.1
+*   It works well when compress larg size image, bring a high compression ratio, but it has a really little effect on small size image.
+*   Works well with non-text image.
+# Issues
+1. UI: we have no UI, this should be consider at last.
+2. Bad performance (comment the console log to avoid IO block, increase performance)
 # Documents
 * Theory
-    * [blog](http://www.robertstocker.co.uk/jpeg/jpeg_new_6.htm)
+    * T? tìm hi?u, l?n r?i, không bi?t google à, th?y t? b?o th?
+    * [blog 1](http://www.robertstocker.co.uk/jpeg/jpeg_new_6.htm)
+    * [blog 2](http://imrannazar.com/Let%27s-Build-a-JPEG-Decoder%3A-Concepts)
     * [video](https://www.youtube.com/watch?v=Q2aEzeMDHMA)
 * Coding
-    * [source code C](https://github.com/stbrumme/toojpeg)
-![](https://scontent.fhan2-1.fna.fbcdn.net/v/t1.15752-9/75439382_2832649200294713_3042513837023559680_n.png?_nc_cat=103&_nc_oc=AQk4_ExhGKoVkQJo9sG2ORdGGNx9SvVTtUjv6FQuMkr1SkL7mFr-Zwh4fefErbt6SPo&_nc_ht=scontent.fhan2-1.fna&oh=f1213b959aaa560142912433c98680ca&oe=5E467229 "TEST image YCbCr")
+    * [Huffman encoding](https://www.impulseadventure.com/photo/jpeg-huffman-coding.html)
+    * [source code C++](https://github.com/stbrumme/toojpeg)

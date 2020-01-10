@@ -16,10 +16,10 @@ public class Bitcode {
 		System.out.print((int)code+ ":"+stringCodeWord+"\t");
 	}
 	public void myPrintCodeWord() {
-		System.out.print(value + ":" + codeWord2BinaryString()+"\t");
+		System.out.print(value + ":" + codeWord2BinaryString()+"\t\n");
 	}
 	public void myPrintCodeWord(int i) {
-		System.out.print(Integer.toHexString((int)i) + ":" + codeWord2BinaryString()+"\t");
+		System.out.print(Integer.toHexString((int)i) + ":" + codeWord2BinaryString()+"\t\n");
 	}
 	public String codeWord2BinaryString() {
 		
